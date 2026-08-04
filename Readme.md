@@ -1,6 +1,6 @@
 # 🛍️ ShopPak - MERN E-Commerce Platform
 
-![ShopPak Logo](./src/assets/logo.png)
+![ShopPak Logo](../SHOPAK-ECOM-MERN/Frontend/Shop_pak_ecom_mern/src/assets/logo.png)
 
 <p align="center">
   <b>Shop Smart. Pay Less.</b><br>
