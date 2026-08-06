@@ -19,7 +19,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         try{
-            const res = await fetch('/api/auth/login', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ const HandleContinue=()=>{
   <legend className="fieldset-legend">Password</legend>
   <input type="password" className="input input-bordered w-full" placeholder="Enter Password" value={password} onChange={(e)=>setPassword(e.target.value)} required />
 </fieldset>
-<button type='submit' className='btn bg-green-500 w-full text-gray-800 mt-2' >Login</button>
+<button type='submit' className='btn bg-green-500 hover:bg-green-600 hover:text-white w-full text-gray-800 mt-2' >Login</button>
 {/* <a className='btn bg-green-500 w-full text-gray-800 mt-2'>Login</a> */}
       <p className='text-center mt-5'>Don't Have An Account 
         <Link to={'/register'}

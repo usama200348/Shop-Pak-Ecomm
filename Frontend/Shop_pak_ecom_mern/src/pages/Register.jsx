@@ -9,7 +9,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [loading,setLoading] = useState(false);
   const [userData, setUserData] = useState(null);
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState("");
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
   const modalRef = useRef(null);
@@ -109,19 +109,20 @@ const Register = () => {
           <fieldset className="fieldset mb-5">
             <legend className="fieldset-legend">Role</legend>
 
-            <select
-              className="select select-bordered w-full"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="user" selected disabled>Select Role</option>
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
+          <select
+  className="select select-bordered w-full"
+  value={role}
+  onChange={(e) => setRole(e.target.value)}
+  required
+>
+  <option value="" selected disabled> Select Role  </option>
+  <option value="user">User</option>
+  <option value="admin">Admin</option>
+</select>
           </fieldset>
           <button
             type="submit"
-            className="btn btn-success w-full"
+            className="btn bg-[#00c950] hover:bg-green-600 hover:text-white w-full"
           >
             Register
           </button>

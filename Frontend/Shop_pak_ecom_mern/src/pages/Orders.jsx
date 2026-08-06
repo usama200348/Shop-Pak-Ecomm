@@ -12,7 +12,7 @@ useEffect(() => {
     try {
       const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
-      const res = await fetch("/api/order", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/order`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${userInfo.token}`,

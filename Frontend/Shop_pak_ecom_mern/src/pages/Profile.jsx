@@ -32,7 +32,7 @@ const Profile = () => {
     try {
       const user = JSON.parse(localStorage.getItem("userInfo"));
 
-      const res = await fetch("/api/auth/profile", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },

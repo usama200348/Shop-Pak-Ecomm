@@ -78,7 +78,7 @@ payment==="cod"
 
 };
 
-      const res = await fetch("/api/order", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

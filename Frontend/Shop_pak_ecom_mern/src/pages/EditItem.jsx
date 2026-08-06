@@ -25,7 +25,7 @@ console.log("Product ID:", id);
 
   const fetchProduct = async () => {
     try {
-      const res = await fetch(`/api/products/${id}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
       const data = await res.json();
 
       if (!res.ok) {

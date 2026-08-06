@@ -21,7 +21,7 @@ import { AuthContext } from '../context/AuthContext';
     useEffect(()=>{
       const fetchSingleProduct=async ()=>{
       try{
-        const res = await fetch(`/api/products/${id}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
         const data = await res.json();
         console.log("Data:", JSON.stringify(data, null, 2));
         setProduct(data);
