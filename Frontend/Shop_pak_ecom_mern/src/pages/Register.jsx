@@ -19,6 +19,7 @@ const Register = () => {
     e.preventDefault();
 
     try {
+      console.log(import.meta.env.VITE_API_URL);
 const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
   
         method: "POST",
@@ -32,7 +33,6 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
           role,
         }),
       });
-console.log(import.meta.env.VITE_API_URL);
       const data = await res.json();
 
       if (res.ok) {
