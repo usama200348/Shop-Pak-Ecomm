@@ -9,54 +9,59 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [loading,setLoading] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [role, setRole] = useState("");
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
   const modalRef = useRef(null);
+  const apiUrl = `${import.meta.env.VITE_API_URL}/api/auth/register`;
 
   const HandleSubmit = async (e) => {
-    setLoading(true)
     e.preventDefault();
+    setLoading(true);
+      setShowLoadingModal(true);
+try {
+  console.log("1. Before fetch");
 
-    try {
-      const apiUrl = `${import.meta.env.VITE_API_URL}/api/auth/register`;
-      console.log("Request URL: "+import.meta.env.VITE_API_URL);
+  const res = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+      email,
+      password,
+      role,
+    }),
+  });
 
-      const res = await fetch(apiUrl, {
-  
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          role,
-        }),
-      });
-      const data = await res.json();
+const data = await res.json();
+    setShowLoadingModal(false);
+console.log(data);
 
-      if (res.ok) {
-        setUserData(data);
-        modalRef.current.showModal();
-        // Optional: Clear form
-        setName("");
-        setEmail("");
-        setPassword("");
-      } else {
-        alert(data.message || "Failed While Registering Your Account");
-      }
-    } catch (error) {
-      console.log("Error While Registering:", error.message);
-    }finally{
-      setLoading(false);
-    }
+if (res.ok) {
+    setUserData(data);
+      setShowSuccessModal(true);
+
+    modalRef.current.showModal();
+}
+else{
+    alert(data.message);
+}
+} catch (err) {
+  console.log("FETCH ERROR:", err);
+      setShowLoadingModal(false);
+
+} finally {
+  setLoading(false);
+}
   };
 
   const handleSuccess = () => {
     login(userData);
-    modalRef.current.close();
+  setShowSuccessModal(false);
     navigate("/");
   };
 
@@ -139,40 +144,51 @@ const Register = () => {
         </form>
       </div>
 
+{showLoadingModal && (
+  <dialog open className="modal">
+    <div className="modal-box text-center">
 
-{loading && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm ">
-    <div className="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4">
-      <span className="loading loading-spinner loading-lg text-green-500"></span>
-<h3 className="text-xl font-bold">Creating Your User Account</h3>
-<p className="text-gray-500 text-center">Please Wait While Registering Your Account</p>
+      <span className="loading loading-spinner loading-lg text-success"></span>
+
+      <h3 className="font-bold text-xl mt-4">
+        Creating Your User Account
+      </h3>
+
+      <p className="mt-3 text-gray-500">
+        Please wait while we create your account...
+      </p>
+
     </div>
-  </div>
+  </dialog>
 )}
 
       {/* Success Modal */}
-      <dialog ref={modalRef} className="modal">
-        <div className="modal-box text-center">
-          <div className="text-6xl mb-4"><FaCircleCheck className="text-6xl text-green-500 mx-auto mb-4 animate-bounce" /></div>
+   {showSuccessModal && (
+  <dialog open className="modal">
+    <div className="modal-box text-center">
 
-          <h3 className="font-bold text-2xl text-green-600">
-            Registration Successful
-          </h3>
+      <FaCircleCheck className="text-6xl text-green-500 mx-auto mb-4 animate-bounce" />
 
-          <p className="py-4 text-gray-500">
-            Your account has been created successfully.
-          </p>
+      <h3 className="font-bold text-2xl text-green-600">
+        Registration Successful
+      </h3>
 
-          <div className="modal-action justify-center">
-            <button
-              className="btn btn-success"
-              onClick={handleSuccess}
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      </dialog>
+      <p className="py-4">
+        Your account has been created successfully.
+      </p>
+
+      <div className="modal-action justify-center">
+        <button
+          className="btn btn-success"
+          onClick={handleSuccess}
+        >
+          Continue
+        </button>
+      </div>
+
+    </div>
+  </dialog>
+)}
     </>
   );
 };
