@@ -10,14 +10,27 @@ const app=express();
 
 console.log("========== SERVER VERSION 999 ==========");
 console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
-app.use(cors(
-    {
-        origin:["http://localhost:5173",process.env.FRONTEND_URL,],
-        methods:['GET','POST','PUT','DELETE'],
-        allowedHeaders:['Content-Type','Authorization'],
-        credentials:true
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    console.log("Incoming Origin:", origin);
+
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
-))
+
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
+
+app.options("*", cors());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 connectDB();
