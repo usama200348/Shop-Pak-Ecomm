@@ -8,7 +8,7 @@ dotenv.config();
 const PORT = process.env.PORT || 3200;
 const app=express();
 
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+console.log( process.env.FRONTEND_URL);
 
 app.use(cors(
     {

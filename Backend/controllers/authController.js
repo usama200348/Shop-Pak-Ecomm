@@ -105,9 +105,9 @@ const RegisterUser = async (req,res)=>{
             name:newUser.name,
             email:newUser.email,
             role:newUser.role,
-            token:generateToken(newUser._id)
+            token:generateToken(newUser._id),
+            message:"User Registered Successfully"
         });            
-        res.status(201).json({message:"User Registered Successfully"});
         }
         else{
             res.status(400).json({message:"Invlaid User Data Entered"})
