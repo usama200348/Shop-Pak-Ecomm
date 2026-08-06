@@ -19,7 +19,7 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch(`${import.meta.VITE_API_URL}/api/auth/register`, {
 
         method: "POST",
         headers: {
