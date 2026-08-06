@@ -20,6 +20,7 @@ const Register = () => {
 
     try {
 const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+  
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,7 +32,7 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
           role,
         }),
       });
-
+console.log(import.meta.env.VITE_API_URL);
       const data = await res.json();
 
       if (res.ok) {
