@@ -8,8 +8,8 @@ dotenv.config();
 const PORT = process.env.PORT || 3200;
 const app=express();
 
-console.log( process.env.FRONTEND_URL);
-
+console.log("========== SERVER VERSION 999 ==========");
+console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
 app.use(cors(
     {
         origin:["http://localhost:5173",process.env.FRONTEND_URL,],
