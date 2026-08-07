@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaCircleCheck } from "react-icons/fa6";
+import { FaCircleCheck , FaSpinner } from "react-icons/fa6";
 
 
 const EditItem = () => {
@@ -8,6 +8,7 @@ const EditItem = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const updatingModalRef  = useRef(null);
   const successModalRef = useRef(null);
   const [imagePreview, setImagePreview] = useState("")
   const [formData, setFormData] = useState({name: "",description: "",price: "",category: "",stock: "",image: null,});
@@ -65,8 +66,7 @@ const EditItem = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
-    setUpdating(true);
+updatingModalRef.current.showModal();
 
     try {
       const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -94,13 +94,13 @@ const EditItem = () => {
       const data = await res.json();
 
       if (res.ok) {
-        successModalRef.current.showModal();
-        navigate("/products");
+      successModalRef.current.showModal();
       } else {
         alert(data.message);
       }
     } catch (err) {
       console.log("Error While Updating Prduct " + err.message);
+      updatingModalRef.current.close();
       alert("Something went wrong.");
     } finally {
       setUpdating(false);
@@ -116,7 +116,62 @@ const EditItem = () => {
   }
 
   return (
-    <div className="min-h-screen bg-base-200 py-10 px-5">
+
+    
+    
+    <>
+{/* Updating Modal Ref*/}
+
+
+<dialog ref={updatingModalRef} className="modal">
+  <div className="modal-box text-center">
+
+    <FaSpinner className="text-6xl text-green-500 mx-auto animate-spin" />
+
+    <h3 className="text-3xl font-bold mt-5">
+      Updating Product...
+    </h3>
+
+    <p className="mt-3 text-gray-500">
+      Please wait while we update your product.
+    </p>
+
+  </div>
+</dialog>
+
+{/* Update Completed Modal */}
+
+
+<dialog ref={successModalRef} className="modal">
+  <div className="modal-box text-center">
+
+    <FaCircleCheck className="text-7xl text-green-500 mx-auto animate-bounce" />
+
+    <h3 className="text-3xl font-bold text-green-600 mt-4">
+      Product Updated Successfully
+    </h3>
+
+    <p className="text-gray-500 mt-3">
+      Your product has been updated successfully.
+    </p>
+
+    <div className="modal-action justify-center">
+      <button
+        className="btn bg-green-500 hover:bg-green-600 text-white"
+        onClick={() => {
+          successModalRef.current.close();
+          navigate("/products");
+        }}
+      >
+        OK
+      </button>
+    </div>
+
+  </div>
+</dialog>
+
+{/* Edit ITem Code */}
+<div className="min-h-screen bg-base-200 py-10 px-5">
 
       <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8">
 
@@ -261,10 +316,10 @@ const EditItem = () => {
       </div>
 
     </div>
+  </>
   );
 
 
-  
 };
 
 export default EditItem;
