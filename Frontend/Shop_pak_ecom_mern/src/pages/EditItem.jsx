@@ -96,6 +96,8 @@ updatingModalRef.current.showModal();
       if (res.ok) {
       successModalRef.current.showModal();
       } else {
+      console.log("Error While Updateing Product");
+      
         alert(data.message);
       }
     } catch (err) {
