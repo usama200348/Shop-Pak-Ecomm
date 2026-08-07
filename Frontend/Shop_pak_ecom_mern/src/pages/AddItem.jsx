@@ -13,12 +13,11 @@ const AddItem = () => {
   const successModalRef = useRef(null); 
   const [product, setProduct] = useState({
     name: "",
-    brand: "",
+    description: "",
     category: "",
     price: "",
     stock: "",
     images: "",
-    description: "",
     featured: false,
   });
 
@@ -49,7 +48,7 @@ useEffect(()=>{
     const formData = new FormData();
 
     formData.append("name", product.name);
-    formData.append("brand", product.brand);
+    // formData.append("brand", product.brand);
     formData.append("category", product.category);
     formData.append("price", product.price);
     formData.append("stock", product.stock);
@@ -77,7 +76,6 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
   // Reset Form
   setProduct({
     name: "",
-    brand: "",
     category: "",
     price: "",
     stock: "",
@@ -215,7 +213,6 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
                   <input
                     type="text"
                     name="brand"
-                    required
                     value={product.brand}
                     onChange={handleChange}
                     placeholder="Apple"

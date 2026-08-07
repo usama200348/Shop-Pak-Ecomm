@@ -29,8 +29,8 @@ const getProductsbyId = async(req,res)=>{
 // Crating Product
 
 const createProduct = async(req,res)=>{
-    console.log("Reached Controller Console From ProductController.js Line 32");
-    
+ console.log("BODY:", req.body);
+  console.log("FILE:", req.file);    
     try{
     const {name,description,price,category,stock,} = req.body;
     
@@ -38,7 +38,9 @@ const createProduct = async(req,res)=>{
         if (req.file) {
             const img = await cloudinary.uploader.upload(req.file.path);
             console.log("Image Link",img);
-            imgUrl = img.secure_url;
+            // imgUrl = img.secure_url;
+            console.log("File:", req.file);
+            imgUrl = "https://dummyimage.com/600x400";
         }
         // console.log("file",req.file);
         
@@ -55,11 +57,19 @@ const createProduct = async(req,res)=>{
         console.log(savedProduct);
         
     }
-    catch(error){
-        res.status(500).json({message:"Internal Server Error While Creating Product"});
-        console.log("Server Error While Creating Product",error.message);
-        
-    }
+    catch (error) {
+    console.log("========== CREATE PRODUCT ERROR ==========");
+    console.error(error);
+    console.error(error.message);
+    console.error(error.stack);
+    console.log("BODY:", req.body);
+console.log("FILE:", req.file);
+console.log("USER:", req.user);
+
+    res.status(500).json({
+        message: error.message,
+    });
+}
 };
 
 
