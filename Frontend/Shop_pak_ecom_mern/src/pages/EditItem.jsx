@@ -1,23 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FaCircleCheck } from "react-icons/fa6";
+
 
 const EditItem = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-console.log("Product ID:", id);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-
-  const [imagePreview, setImagePreview] = useState("");
-
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "",
-    stock: "",
-    image: null,
-  });
+  const successModalRef = useRef(null);
+  const [imagePreview, setImagePreview] = useState("")
+  const [formData, setFormData] = useState({name: "",description: "",price: "",category: "",stock: "",image: null,});
 
   useEffect(() => {
     fetchProduct();
@@ -25,7 +18,7 @@ console.log("Product ID:", id);
 
   const fetchProduct = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
+      const res = await fetch(`/api/products/${id}`);
       const data = await res.json();
 
       if (!res.ok) {
@@ -90,7 +83,7 @@ console.log("Product ID:", id);
         body.append("image", formData.image);
       }
 
-      const res = await fetch(`/api/products/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${userInfo.token}`,
@@ -101,13 +94,13 @@ console.log("Product ID:", id);
       const data = await res.json();
 
       if (res.ok) {
-        alert("Product Updated Successfully");
+        successModalRef.current.showModal();
         navigate("/products");
       } else {
         alert(data.message);
       }
     } catch (err) {
-      console.log(err);
+      console.log("Error While Updating Prduct " + err.message);
       alert("Something went wrong.");
     } finally {
       setUpdating(false);
@@ -127,7 +120,7 @@ console.log("Product ID:", id);
 
       <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8">
 
-        <h1 className="text-4xl font-bold text-center mb-8 text-success">
+        <h1 className="text-4xl font-bold text-center mb-8 text-green-500">
           Edit Product
         </h1>
 
@@ -255,10 +248,10 @@ console.log("Product ID:", id);
             </button>
 
             <button
-              className="btn btn-success text-white"
+              className="btn bg-green-500 hover:bg-green-600 text-white"
               disabled={updating}
             >
-              {updating ? "Updating..." : "Update Product"}
+              {updating ? setLoading(true) : "Update Product"}
             </button>
 
           </div>
@@ -269,6 +262,9 @@ console.log("Product ID:", id);
 
     </div>
   );
+
+
+  
 };
 
 export default EditItem;

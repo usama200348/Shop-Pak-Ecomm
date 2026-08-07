@@ -1,15 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-  FaUser,
-  FaPhone,
-  FaMapMarkerAlt,
-  FaEnvelope,
-  FaMoneyBillWave,
-  FaCreditCard,
-  FaCheckCircle,
-} from "react-icons/fa";
+import {FaUser,FaPhone,FaMapMarkerAlt,FaEnvelope,FaMoneyBillWave,FaCreditCard,FaCheckCircle,} from "react-icons/fa";
 import EasyPaisa from "../assets/easypaisa.png";
 import JazzCash from "../assets/jazzcash.webp";
 import { motion } from "framer-motion";
