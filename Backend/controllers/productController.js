@@ -38,11 +38,8 @@ const createProduct = async(req,res)=>{
         if (req.file) {
             const img = await cloudinary.uploader.upload(req.file.path);
             console.log("Image Link",img);
-            // imgUrl = img.secure_url;
-            console.log("File:", req.file);
-            imgUrl = "https://dummyimage.com/600x400";
+            imgUrl = img.secure_url;
         }
-        // console.log("file",req.file);
         
         const product = new Product({
             name,
@@ -58,16 +55,9 @@ const createProduct = async(req,res)=>{
         
     }
     catch (error) {
-    console.log("========== CREATE PRODUCT ERROR ==========");
-    console.error(error);
-    console.error(error.message);
-    console.error(error.stack);
-    console.log("BODY:", req.body);
-console.log("FILE:", req.file);
-console.log("USER:", req.user);
 
     res.status(500).json({
-        message: error.message,
+        message:{message:"Error While Creating Project" + error.message} ,
     });
 }
 };
