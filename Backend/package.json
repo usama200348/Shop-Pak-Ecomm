@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "name": "backend",
   "version": "1.0.0",
   "description": "shoppak-backend",
@@ -26,22 +25,5 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
-=======
-  "name": "shopak-ecom-mern",
-  "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
-  "scripts": {
-  "install": "cd Backend && npm install && cd ../Frontend/Shop_pak_ecom_mern && npm install",
-  "dev:server": "cd Backend && npm run dev",
-  "dev:client": "cd Frontend/Shop_pak_ecom_mern && npm run dev",
-  "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-  "build": "cd Frontend/Shop_pak_ecom_mern && npm run build"
-},
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "concurrently": "^10.0.4"
->>>>>>> 2458ba7d55573bf31cf4570b9c45c0c8af4fb3c4
   }
 }
