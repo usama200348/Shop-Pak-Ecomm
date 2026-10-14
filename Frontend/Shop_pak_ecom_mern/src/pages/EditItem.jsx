@@ -1,48 +1,58 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaCircleCheck , FaSpinner } from "react-icons/fa6";
-
+import { FaCircleCheck, FaSpinner } from "react-icons/fa6";
+import { API_URL } from "../config/api";
+import { CATEGORY_OPTIONS } from "../config/categories";
 
 const EditItem = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const updatingModalRef  = useRef(null);
+  const updatingModalRef = useRef(null);
   const successModalRef = useRef(null);
-  const [imagePreview, setImagePreview] = useState("")
-  const [formData, setFormData] = useState({name: "",description: "",price: "",category: "",stock: "",image: null,});
+  const [imagePreview, setImagePreview] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    stock: "",
+    image: null,
+  });
 
   useEffect(() => {
-    fetchProduct();
-  }, []);
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/products/${id}`);
+        const data = await res.json();
 
-  const fetchProduct = async () => {
-    try {
-      const res = await fetch(`/api/products/${id}`);
-      const data = await res.json();
+        if (!res.ok) {
+          alert(data.message || "Failed to load product");
+          return;
+        }
 
-      if (!res.ok) {
-        alert(data.message);
-        return;
+        setFormData({
+          name: data.name || "",
+          description: data.description || "",
+          price: data.price || "",
+          category: data.category || "",
+          stock: data.stock || "",
+          image: null,
+        });
+
+        setImagePreview(data.images || "");
+      } catch (err) {
+        console.error("Error fetching product for edit:", err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setFormData({
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        category: data.category,
-        stock: data.stock,
-        image: null,
-      });
-
-      setImagePreview(data.images);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
+    if (id) {
+      fetchProduct();
     }
-  };
+  }, [id]);
 
   const handleChange = (e) => {
     if (e.target.name === "image") {
@@ -66,10 +76,18 @@ const EditItem = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-updatingModalRef.current.showModal();
+    setUpdating(true);
+    updatingModalRef.current.showModal();
 
     try {
       const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
+      if (!userInfo || !userInfo.token) {
+        updatingModalRef.current.close();
+        alert("Session expired. Please log in as admin.");
+        navigate("/login");
+        return;
+      }
 
       const body = new FormData();
 
@@ -83,7 +101,7 @@ updatingModalRef.current.showModal();
         body.append("image", formData.image);
       }
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
+      const res = await fetch(`${API_URL}/api/products/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${userInfo.token}`,
@@ -93,17 +111,17 @@ updatingModalRef.current.showModal();
 
       const data = await res.json();
 
+      updatingModalRef.current.close();
+
       if (res.ok) {
-      successModalRef.current.showModal();
+        successModalRef.current.showModal();
       } else {
-      console.log("Error While Updateing Product");
-      
-        alert(data.message);
+        alert(data.message || "Error while updating product");
       }
     } catch (err) {
-      console.log("Error While Updating Prduct " + err.message);
+      console.error("Error while updating product:", err.message);
       updatingModalRef.current.close();
-      alert("Something went wrong.");
+      alert("Something went wrong updating product.");
     } finally {
       setUpdating(false);
     }
@@ -173,9 +191,9 @@ updatingModalRef.current.showModal();
 </dialog>
 
 {/* Edit ITem Code */}
-<div className="min-h-screen bg-base-200 py-10 px-5">
+<div className="min-h-screen bg-base-200 py-10 px-4 sm:px-5">
 
-      <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8">
+      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-xl p-5 sm:p-8">
 
         <h1 className="text-4xl font-bold text-center mb-8 text-green-500">
           Edit Product
@@ -207,13 +225,19 @@ updatingModalRef.current.showModal();
                 Category
               </label>
 
-              <input
-                type="text"
+              <select
                 name="category"
-                className="input input-bordered w-full mt-2"
+                className="select select-bordered w-full mt-2"
                 value={formData.category}
                 onChange={handleChange}
-              />
+              >
+                <option value="">Select Category</option>
+                {CATEGORY_OPTIONS.map((category) => (
+                  <option key={category.slug} value={category.value}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
 
             </div>
 
@@ -294,7 +318,7 @@ updatingModalRef.current.showModal();
             </div>
           )}
 
-          <div className="flex justify-end gap-4 mt-10">
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-4 mt-10">
 
             <button
               type="button"
@@ -308,7 +332,7 @@ updatingModalRef.current.showModal();
               className="btn bg-green-500 hover:bg-green-600 text-white"
               disabled={updating}
             >
-              {updating ? setLoading(true) : "Update Product"}
+              {updating ? "Updating Product..." : "Update Product"}
             </button>
 
           </div>

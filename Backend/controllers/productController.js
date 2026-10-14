@@ -1,10 +1,34 @@
 const Product = require('../model/Product');
 const cloudinary = require('../config/cloudinary');
+const { getCategoryLabel, getCategoryOption } = require('../utils/categories');
 
 // Getting ALL Product
 const getProducts = async(req,res)=>{
     try{
-        const products = await Product.find();
+        const { category, search, sort } = req.query;
+        const query = {};
+
+        if (category && String(category).toLowerCase() !== "all") {
+            const option = getCategoryOption(category);
+            const categoryLabel = option ? option.label : category;
+            query.category = new RegExp(`^${categoryLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+        }
+
+        if (search) {
+            query.name = { $regex: String(search).trim(), $options: 'i' };
+        }
+
+        let productsQuery = Product.find(query);
+
+        if (sort === 'low') {
+            productsQuery = productsQuery.sort({ price: 1 });
+        } else if (sort === 'high') {
+            productsQuery = productsQuery.sort({ price: -1 });
+        } else if (sort === 'newest') {
+            productsQuery = productsQuery.sort({ createdAt: -1 });
+        }
+
+        const products = await productsQuery;
         res.json(products);
     }catch(error){
         res.status(500).json({message:"Server Error While Getting All Products"});
@@ -28,16 +52,14 @@ const getProductsbyId = async(req,res)=>{
 
 // Crating Product
 
-const createProduct = async(req,res)=>{
- console.log("BODY:", req.body);
-  console.log("FILE:", req.file);    
-    try{
-    const {name,description,price,category,stock,} = req.body;
-    
-    let imgUrl = '';
+const createProduct = async (req, res) => {
+    try {
+        const { name, description, price, category, stock } = req.body;
+        const normalizedCategory = getCategoryLabel(category);
+        
+        let imgUrl = req.body.images || '';
         if (req.file) {
             const img = await cloudinary.uploader.upload(req.file.path);
-            console.log("Image Link",img);
             imgUrl = img.secure_url;
         }
         
@@ -45,52 +67,46 @@ const createProduct = async(req,res)=>{
             name,
             description,
             price,
-            category,
+            category: normalizedCategory,
             stock,
-            images:imgUrl
+            images: imgUrl
         });
         const savedProduct = await product.save();
-        res.status(201).json({message: "Product Saved In Database Successfully"});
-        console.log(savedProduct);
-        
+        return res.status(201).json({ message: "Product Saved In Database Successfully", product: savedProduct });
+    } catch (error) {
+        console.log("Error While Creating Product:", error.message);
+        return res.status(500).json({
+            message: "Error While Creating Product: " + error.message,
+        });
     }
-    catch (error) {
-
-    res.status(500).json({
-        message:{message:"Error While Creating Project" + error.message} ,
-    });
-}
 };
 
-
 // Update Product
-
-
-const updateProduct = async(req,res)=>{
-    try{
-        const {name,description,price,category,stock,} = req.body;
-        const product_id=await Product.findById(req.params.id);
-        if(product_id){
-            product_id.name = name || product_id.name;
-            product_id.description = description || product_id.description;
-            product_id.price = price || product_id.price;
-            product_id.category = category || product_id.category;
-            product_id.stock = stock || product_id.stock;
+const updateProduct = async (req, res) => {
+    try {
+        const { name, description, price, category, stock } = req.body;
+        const product_id = await Product.findById(req.params.id);
+        if (product_id) {
+            if (name !== undefined) product_id.name = name;
+            if (description !== undefined) product_id.description = description;
+            if (price !== undefined) product_id.price = price;
+            if (category !== undefined) product_id.category = getCategoryLabel(category);
+            if (stock !== undefined) product_id.stock = stock;
             if (req.file) {
-      const update_imgs = await cloudinary.uploader.upload(req.file.path);
-      console.log(update_imgs);
-      product_id.images   =  update_imgs.secure_url;
-            } 
-            const updatedProduct =await product_id.save();
-            res.json(updatedProduct);
+                const update_imgs = await cloudinary.uploader.upload(req.file.path);
+                product_id.images = update_imgs.secure_url;
+            } else if (req.body.images) {
+                product_id.images = req.body.images;
+            }
+            const updatedProduct = await product_id.save();
+            return res.json(updatedProduct);
+        } else {
+            return res.status(404).json({ message: "Product Not Found" });
         }
-        else{
-            res.status(404).json({message:"Product Not Found"});
-        };
-    }catch(error){
-        res.status(500).json({message : "Internal Server Error While Updating Product"});
-        console.log("Server Error While Updating Product" , error.message);
-    };
+    } catch (error) {
+        console.log("Server Error While Updating Product:", error.message);
+        return res.status(500).json({ message: "Internal Server Error While Updating Product: " + error.message });
+    }
 };
 
 

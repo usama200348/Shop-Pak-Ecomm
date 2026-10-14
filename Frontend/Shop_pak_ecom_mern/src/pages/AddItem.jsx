@@ -1,13 +1,15 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import {FaBoxOpen,FaImage,FaTag,FaDollarSign,FaWarehouse,FaAlignLeft,FaPlusCircle } from "react-icons/fa";
+import { FaBoxOpen, FaTag, FaDollarSign, FaWarehouse, FaAlignLeft, FaPlusCircle } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config/api";
+import { CATEGORY_OPTIONS } from "../config/categories";
 
 const AddItem = () => {
   const [loading, setLoading] = useState(false);
-  const [image,setImage] = useState(null);
-  const {user} = useContext(AuthContext)
+  const [image, setImage] = useState(null);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const ModalRef = useRef(null);
   const successModalRef = useRef(null); 
@@ -21,16 +23,17 @@ const AddItem = () => {
     featured: false,
   });
 
+  useEffect(() => {
+    if (!user || user.role !== 'admin') {
+      ModalRef.current?.showModal();
+      const timer = setTimeout(() => {
+        ModalRef.current?.close();
+        navigate('/');
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [user, navigate]);
 
-useEffect(()=>{
-  if (!user || user.role !== 'admin') {
-    ModalRef.current.showModal();
-    setTimeout(()=>{
-      ModalRef.current.close();
-      navigate('/');
-    },2500)
-  }
-},[user,navigate])
   const handleChange = (e) => {
     const { name, value, checked, type } = e.target;
 
@@ -40,33 +43,39 @@ useEffect(()=>{
     });
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const formData = new FormData();
+    try {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
-    formData.append("name", product.name);
-    // formData.append("brand", product.brand);
-    formData.append("category", product.category);
-    formData.append("price", product.price);
-    formData.append("stock", product.stock);
-    formData.append("description", product.description);
-    formData.append("featured", product.featured);
-    formData.append("image", image);
+      if (!userInfo || !userInfo.token) {
+        alert("Session expired. Please log in as admin.");
+        navigate("/login");
+        return;
+      }
 
- const user = JSON.parse(localStorage.getItem("userInfo"));
+      const formData = new FormData();
+      formData.append("name", product.name);
+      formData.append("category", product.category);
+      formData.append("price", product.price);
+      formData.append("stock", product.stock);
+      formData.append("description", product.description);
+      formData.append("featured", product.featured);
+      if (image) {
+        formData.append("image", image);
+      }
 
-const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${user.token}`,
-  },
-  body: formData,
-});
+      const res = await fetch(`${API_URL}/api/products`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+        body: formData,
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
     console.log(data);
 
@@ -144,11 +153,11 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
 </dialog>
 
 
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white py-12">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white py-12 px-4">
 
       <div className="max-w-5xl mx-auto">
 
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
 
           {/* Header */}
 
@@ -167,7 +176,7 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
 
           <form
             onSubmit={handleSubmit}
-            className="p-10 space-y-8"
+            className="p-5 sm:p-8 lg:p-10 space-y-8"
           >
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -240,12 +249,11 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
                 >
                   <option value="">Select Category</option>
 
-                  <option>Smartphones</option>
-                  <option>Laptop</option>
-                  <option>Wearables</option>
-                  <option>Accessories</option>
-                  <option>Gaming</option>
-                  <option>Audio</option>
+                  {CATEGORY_OPTIONS.map((category) => (
+                    <option key={category.slug} value={category.value}>
+                      {category.name}
+                    </option>
+                  ))}
 
                 </select>
 
@@ -353,7 +361,7 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
 
             {/* Featured */}
 
-            <div className="bg-green-50 rounded-xl p-5 flex justify-between items-center">
+            <div className="bg-green-50 rounded-lg p-5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
 
               <div>
 

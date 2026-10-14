@@ -5,8 +5,17 @@
 html,
 body{
     font-family: "Saira",sans-serif !important;
+    background: #ffffff;
+    color: #1f2937;
 }
 
 *{
     font-family: inherit;
+}
+
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
 }

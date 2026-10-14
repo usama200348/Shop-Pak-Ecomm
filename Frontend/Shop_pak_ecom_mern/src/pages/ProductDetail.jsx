@@ -1,38 +1,49 @@
-  import React, { useState,useEffect, useRef, useContext } from 'react'
-  import { Provider, useDispatch } from 'react-redux';
-  import {FaStar,FaTruck,FaUndo,FaShieldAlt,FaShoppingCart,FaBolt} from "react-icons/fa";
-  import {FaCircleCheck} from 'react-icons/fa6'
-  import { Link, useNavigate, useParams } from 'react-router-dom'
-  import Button from '../componetns/Button';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { useDispatch } from 'react-redux';
+import { FaStar, FaTruck, FaUndo, FaShieldAlt, FaShoppingCart, FaBolt } from "react-icons/fa";
+import { FaCircleCheck } from 'react-icons/fa6';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import Button from '../componetns/Button';
 import { addToCart } from '../redux/cartSlice';
 import { AuthContext } from '../context/AuthContext';
+import { API_URL } from '../config/api';
+import { getCategoryOption } from '../config/categories';
 
-  const ProductDetail = () => {
-    const {id} = useParams();
-    const [product,setProduct] = useState(null);
-    const [loading,setLoading] = useState(true);
-    const [redirect,setRedirect] = useState("")
-    const [qty,setQty] = useState(1)
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const modalRef = useRef(null)
-    const {user} = useContext(AuthContext);
-    
-    useEffect(()=>{
-      const fetchSingleProduct=async ()=>{
-      try{
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
+const ProductDetail = () => {
+  const { id } = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [redirect, setRedirect] = useState("");
+  const [qty, setQty] = useState(1);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const modalRef = useRef(null);
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchSingleProduct = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/products/${id}`);
         const data = await res.json();
-        console.log("Data:", JSON.stringify(data, null, 2));
-        setProduct(data);
-      }catch(error){
-        console.log("Error While Fetching Single Product With Id" , error.message);
-      }finally{
+        if (res.ok && data && data._id) {
+          setProduct(data);
+        } else {
+          setProduct(null);
+          setError(data?.message || "Product Not Found");
+        }
+      } catch (err) {
+        console.error("Error while fetching product by ID:", err.message);
+        setError(err.message);
+        setProduct(null);
+      } finally {
         setLoading(false);
       }
+    };
+    if (id) {
+      fetchSingleProduct();
     }
-  fetchSingleProduct();
-    },[id])
+  }, [id]);
 
 // Handle Cart 
 
@@ -49,7 +60,7 @@ const HandleAddToCart = ()=>{
       name:product.name,
       price:product.price,
       imageUrl:product.images,
-      qty:1
+      qty
     }));
     setRedirect('/cart')
     modalRef.current.showModal();
@@ -69,7 +80,7 @@ const HandleBuyNow = () => {
       name: product.name,
       price: product.price,
       imageUrl: product.images,
-      qty: 1,
+      qty,
     })
   );
 
@@ -77,14 +88,30 @@ const HandleBuyNow = () => {
   modalRef.current.showModal();
 };
   if (loading) {
-    return(
+    return (
       <div className='flex justify-center items-center h-screen'>
         <span className='loading loading-spinner loading-lg text-green-500'></span>
       </div>
     );
-  };
+  }
 
-  const oldPrice = Math.round(product.price*1.2);
+  if (!product) {
+    return (
+      <div className='flex flex-col justify-center items-center h-screen gap-4 px-5 text-center'>
+        <h2 className='text-3xl font-bold text-gray-700'>Product Not Found</h2>
+        <p className='text-gray-500'>{error || "The requested product does not exist or has been removed."}</p>
+        <Link to="/products" className='btn bg-green-500 hover:bg-green-600 text-white'>
+          Browse Products
+        </Link>
+      </div>
+    );
+  }
+
+  const oldPrice = Math.round((product?.price || 0) * 1.2);
+  const categorySlug = getCategoryOption(product.category)?.slug || product.category?.toLowerCase() || "";
+  const imageSrc = product.images
+    ? `${product.images}?w=800&auto=format&fit=crop&q=80`
+    : "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop&q=80";
 
     return (
       
@@ -116,7 +143,6 @@ const HandleBuyNow = () => {
     } else {
       navigate("/checkout");
     }
-        navigate(redirect);
 
   }}
 >
@@ -137,14 +163,14 @@ const HandleBuyNow = () => {
   </div>
 </dialog>
       {/* Product Detail */}
-    <div className='bg-gray-50 min-h-screen py-8'>
+    <div className='bg-gray-50 min-h-screen py-8 overflow-x-hidden'>
       {/* Breadcrumbs */}
-      <div className="breadcrumbs text-sm mt-3 flex justify-around">
+      <div className="breadcrumbs text-sm mt-3 max-w-7xl mx-auto px-5 overflow-x-auto">
     <ul>
       <li><Link to={'/'}>Home</Link></li>
       <li><Link to={'/products'}>Shop</Link></li>
 <li>
-  <Link to={`/products?category=${product.category.toLowerCase()}`}>
+  <Link to={`/products?category=${categorySlug}`}>
     {product.category}
   </Link>
 </li>      <li><a href="#">{product.name}</a></li> 
@@ -153,23 +179,23 @@ const HandleBuyNow = () => {
 
   {/* Product Detail */}
 
-  <div className='max-w-7xl mx-auto px-5 grid  lg:grid-cols-2 gap-14 '>
+  <div className='max-w-7xl mx-auto px-5 grid lg:grid-cols-2 gap-8 lg:gap-14'>
     {/* Image */}
-    <div className='bg-white rounded-3xl shadow-xl overflow-hidden group'>
+    <div className='bg-white rounded-lg shadow-xl overflow-hidden group'>
 
       <img
       // src={product.images}
-        src={`${product.images}?w=800&auto=format&fit=crop&q=80`}
+        src={imageSrc}
       alt={product.name}
-      className='w-full h-[550px] object-contain p-8 transition duration-500 hover:scale-105'
+      className='w-full h-80 sm:h-[450px] lg:h-[550px] object-contain p-4 sm:p-8 transition duration-500 hover:scale-105'
       />
     </div>
 
     <div>
-      <span className='badge badge-success badge-lg mb-4 mt-6 p-4.5 text-xl font-semibold'>
+      <span className='badge badge-success badge-lg mb-4 mt-6 px-4 py-3 text-xl font-semibold'>
         {product.category}
       </span>
-      <h1 className='text-5xl font-bold text-gray-800 leading-tight '>{product.name}</h1>
+      <h1 className='text-3xl sm:text-5xl font-bold text-gray-800 leading-tight break-words'>{product.name}</h1>
   
   <div className='flex items-center gap-2 mt-4'>
   <div className='flex text-yellow-400'>
@@ -183,7 +209,13 @@ const HandleBuyNow = () => {
   </div>
   {/* Price */}
   <div className='mt-7 flex items-center gap-4'>
-    <h2 className='text-3xl font-bold text-green-500'><span className='text-gray-800'>Rs</span> {product.price.toLocaleString()} <span className='badge badge-error text-gray-800'>20%</span></h2>
+    <h2 className='text-2xl sm:text-3xl font-bold text-green-500'>
+      <span className='text-gray-800'>Rs</span> {product.price?.toLocaleString()}{" "}
+      <span className='text-gray-400 text-lg line-through font-normal ml-2'>
+        Rs {oldPrice.toLocaleString()}
+      </span>{" "}
+      <span className='badge badge-error text-gray-800 ml-2'>20% OFF</span>
+    </h2>
   </div>
   <div className="mt-6">
     {product.stock>0?(
@@ -201,7 +233,7 @@ const HandleBuyNow = () => {
       <button className='px-4 py-2 bg-gray-100 hover:bg-green-500 hover:text-white' onClick={()=>setQty(qty+1)}>+</button>
     </div>
     {/* Add To Cart */}
-<div className="flex gap-4 flex-1">
+<div className="flex flex-col sm:flex-row gap-4 flex-1 w-full">
 
   {user?.role === "admin" ? (
 
@@ -238,24 +270,24 @@ const HandleBuyNow = () => {
   </div>
   {/* Product Features */}
 
-  <div className='grid grid-cols-3 gap-5 mt-12'>
-    <div className='bg-white rounded-xl shadow-md p-4 text-center'>
+  <div className='grid grid-cols-1 sm:grid-cols-3 gap-5 mt-12'>
+    <div className='bg-white rounded-lg shadow-md p-4 text-center'>
       <FaTruck className='mx-auto text-2xl text-green-500 mb-2'/>
       <p className='font-semibold text-sm'>Free Delivery</p>
     </div>
-    <div className='bg-white rounded-xl shadow-md p-4 text-center'>
+    <div className='bg-white rounded-lg shadow-md p-4 text-center'>
       <FaUndo className='mx-auto text-2xl text-blue-500 mb-2'/>
       <p className='font-semibold text-sm'>7 Days Return</p>
     </div>
-    <div className='bg-white rounded-xl shadow-md p-4 text-center'>
+    <div className='bg-white rounded-lg shadow-md p-4 text-center'>
       <FaShieldAlt className='mx-auto text-2xl text-purple-500 mb-2'/>
       <p className='font-semibold text-sm'>Warranty Claim</p>
     </div>
   </div>
     </div>
     {/* Description */}
-    <div className='max-w-8xl  px-5 mt-16'>
-  <div className='bg-white rounded-3xl font-bold mb-5'>
+    <div className='lg:col-span-2 px-0 sm:px-5 mt-8 lg:mt-16'>
+  <div className='bg-white rounded-lg font-bold mb-5 p-5'>
     <h2 className='text-3xl font-bold mb-5'>Product Description</h2>
     <p className='text-gray-600 leading-8 text-lg'>{product.description}</p>
   </div>

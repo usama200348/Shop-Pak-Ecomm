@@ -52,11 +52,11 @@ const Cart = () => {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen py-10">
+    <div className="bg-gray-100 min-h-screen py-10 overflow-x-hidden">
 
       <div className="max-w-7xl mx-auto px-5">
 
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-10">
 
           <h1 className="text-4xl font-bold">
             Shopping Cart
@@ -79,7 +79,7 @@ const Cart = () => {
                 key={item.productId}
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-3xl shadow-lg p-5"
+                className="bg-white rounded-lg shadow-lg p-5"
               >
                 <div className="flex flex-col md:flex-row gap-5">
 
@@ -129,7 +129,7 @@ const Cart = () => {
 
                   </div>
 
-                  <div className="flex flex-col justify-between items-end">
+                  <div className="flex md:flex-col justify-between md:items-end items-center gap-4">
 
                     <button
                       className="btn btn-error btn-circle"
@@ -165,7 +165,7 @@ const Cart = () => {
           <motion.div
             initial={{ x: 100 }}
             animate={{ x: 0 }}
-            className="bg-white rounded-3xl shadow-xl p-8 h-fit sticky top-28"
+            className="bg-white rounded-lg shadow-xl p-5 sm:p-8 h-fit lg:sticky lg:top-28"
           >
 
             <h2 className="text-3xl font-bold mb-8">

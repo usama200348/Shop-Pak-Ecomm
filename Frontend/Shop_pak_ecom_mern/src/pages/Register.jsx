@@ -1,62 +1,53 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import {FaCircleCheck} from 'react-icons/fa6'
+import { FaCircleCheck } from 'react-icons/fa6';
+import { API_URL } from "../config/api";
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading,setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [userData, setUserData] = useState(null);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [role, setRole] = useState("");
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
-  const modalRef = useRef(null);
-  const apiUrl = `${import.meta.env.VITE_API_URL}/api/auth/register`;
 
   const HandleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-      setShowLoadingModal(true);
-try {
-  console.log("1. Before fetch");
+    setShowLoadingModal(true);
+    setErrorMessage("");
+    try {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role,
+        }),
+      });
 
-  const res = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name,
-      email,
-      password,
-      role,
-    }),
-  });
-
-const data = await res.json();
-    setShowLoadingModal(false);
-console.log(data);
-
-if (res.ok) {
-    setUserData(data);
-      setShowSuccessModal(true);
-
-    modalRef.current.showModal();
-}
-else{
-    alert(data.message);
-}
-} catch (err) {
-  console.log("FETCH ERROR:", err);
+      const data = await res.json();
       setShowLoadingModal(false);
 
-} finally {
-  setLoading(false);
-}
+      if (res.ok) {
+        setUserData(data);
+        setShowSuccessModal(true);
+      } else {
+        setErrorMessage(data.message || "Registration failed");
+      }
+    } catch (err) {
+      console.error("FETCH ERROR:", err);
+      setShowLoadingModal(false);
+      setErrorMessage("Network error: Could not reach backend server.");
+    }
   };
 
   const handleSuccess = () => {
@@ -75,6 +66,12 @@ else{
           <h2 className="text-3xl font-bold text-center mb-6">
             Register
           </h2>
+
+          {errorMessage && (
+            <div className="alert alert-error text-sm py-2 mb-4">
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
           <fieldset className="fieldset mb-3">
             <legend className="fieldset-legend">Full Name</legend>
@@ -120,7 +117,7 @@ else{
   onChange={(e) => setRole(e.target.value)}
   required
 >
-  <option value="" selected disabled> Select Role  </option>
+  <option value="" disabled> Select Role  </option>
   <option value="user">User</option>
   <option value="admin">Admin</option>
 </select>

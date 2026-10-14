@@ -9,6 +9,7 @@ import {
   FaSave,
 } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 
 const Profile = () => {
   const { login } = useContext(AuthContext);
@@ -32,7 +33,12 @@ const Profile = () => {
     try {
       const user = JSON.parse(localStorage.getItem("userInfo"));
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+      if (!user || !user.token) {
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/api/auth/profile`, {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
@@ -42,17 +48,17 @@ const Profile = () => {
 
       if (res.ok) {
         setFormData({
-          name: data.name,
-          email: data.email,
+          name: data.name || "",
+          email: data.email || "",
           password: "",
-          role: data.role,
-          verified: data.verified,
+          role: data.role || "",
+          verified: !!data.verified,
         });
       } else {
-        alert(data.message);
+        console.error("Profile fetch error:", data.message);
       }
     } catch (err) {
-      console.log(err);
+      console.error("Profile load exception:", err);
     } finally {
       setLoading(false);
     }
@@ -76,7 +82,12 @@ const Profile = () => {
     try {
       const user = JSON.parse(localStorage.getItem("userInfo"));
 
-      const res = await fetch("/api/auth/profile", {
+      if (!user || !user.token) {
+        alert("Session expired. Please log in again.");
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/api/auth/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -97,10 +108,11 @@ const Profile = () => {
 
         alert("Profile Updated Successfully");
       } else {
-        alert(data.message);
+        alert(data.message || "Failed to update profile");
       }
     } catch (err) {
-      console.log(err);
+      console.error("Profile update error:", err);
+      alert("Error updating profile. Please try again.");
     } finally {
       setSaving(false);
     }

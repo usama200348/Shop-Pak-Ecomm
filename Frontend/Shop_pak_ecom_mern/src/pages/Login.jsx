@@ -1,80 +1,51 @@
-import React, { useContext, useState } from 'react'
-import {AuthContext} from '../context/AuthContext'
-import {FaCircleCheck} from 'react-icons/fa6'
-
-import { useRef } from 'react';
+import React, { useContext, useState, useRef } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { FaCircleCheck } from 'react-icons/fa6';
 import { Link, useNavigate } from 'react-router-dom';
+import { API_URL } from '../config/api';
 
 const Login = () => {
-
-    const [email,setEmail]=useState('');
-    const [password,setPassword]=useState('');
-    const [loading,setLoading] = useState(false);
-    const [userData,setUserData]=useState(null);
-    const {login} = useContext(AuthContext);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [userData, setUserData] = useState(null);
+    const { login } = useContext(AuthContext);
     const modalRef = useRef(null);
     const navigate = useNavigate();
     
-    const handleSubmit = async(e)=>{
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        try{
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email,
-      password,
-    }),
-  });
-  const data = await res.json();
-console.log("Status :",res.status);
-console.log("Response: ", data);
+        setErrorMessage('');
+        try {
+            const res = await fetch(`${API_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                }),
+            });
+            const data = await res.json();
 
-
-  if (res.ok) {
-    setUserData(data);
-    setEmail("");
-    setPassword("");
-    modalRef.current.showModal();
-    <>
-    <dialog ref={modalRef} className="modal">
-  <div className="modal-box w-11/12 max-w-5xl">
-    <h3 className="font-bold text-lg">Hello!</h3>
-    <p className="py-4">Welcome {userData?.user?.name || userData.name}</p>
-    <div className="modal-action">
-      <form method="dialog">
-        <Link className='btn' to={'/'}>Ok</Link>
-      </form>
-    </div>
-  </div>
-</dialog>
-    </>
-  }
-else{
-       <>
-    <dialog ref={modalRef} className="modal">
-  <div className="modal-box w-11/12 max-w-5xl">
-    <h3 className="font-bold text-lg text-red-600">Error While Login !</h3>
-    <p className="py-4">Error : data.message</p>
-    <div className="modal-action">
-      <form method="dialog">
-        <Link className='btn' to={'/login'}>Ok</Link>
-      </form>
-    </div>
-  </div>
-</dialog>
-    </>
-}
-}
-catch(error){
-    console.log("Error While Login From Frontend" + error.message);
-}    finally{
-    setLoading(false);
-}
-};
+            if (res.ok) {
+                setUserData(data);
+                setEmail("");
+                setPassword("");
+                modalRef.current.showModal();
+            } else {
+                setErrorMessage(data.message || "Invalid email or password");
+            }
+        } catch (error) {
+            console.error("Login Error:", error.message);
+            setErrorMessage("Network error: Could not reach backend server. Please make sure the backend is running.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
 const HandleContinue=()=>{
     login(userData);
@@ -87,6 +58,11 @@ const HandleContinue=()=>{
     <div className='flex justify-center items-center min-h-screen'>
         <form onSubmit={handleSubmit} className='bg-white shadow-xl rounded-2xl p-8 w-full max-w-md'>
             <h2 className='text-3xl font-bold text-center mb-6'>Login</h2>
+            {errorMessage && (
+              <div className="alert alert-error text-sm py-2 mb-4">
+                <span>{errorMessage}</span>
+              </div>
+            )}
             <fieldset className="fieldset">
   <legend className="fieldset-legend">Email</legend>
   <input type="email" className="input input-bordered w-full" placeholder="Enter Email" value={email} onChange={(e)=>setEmail(e.target.value)} required />

@@ -9,6 +9,8 @@ import {
   FaTags,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { API_URL } from "../config/api";
+import { categoryMatches } from "../config/categories";
 
 const Home = () => {
   const [products, setProducts] = useState([]);
@@ -22,36 +24,24 @@ const Home = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
+        const res = await fetch(`${API_URL}/api/products`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch products: ${res.statusText}`);
+        }
         const data = await res.json();
+        const items = Array.isArray(data) ? data : [];
 
-        setProducts(data.slice(0, 4));
+        setProducts(items.slice(0, 4));
 
-        setSmartphones(
-          data.filter(
-            (item) => item.category.toLowerCase() === "smartphones"
-          )
-        );
+        setSmartphones(items.filter((item) => categoryMatches(item?.category, "smartphones")));
 
-        setLaptops(
-          data.filter(
-            (item) => item.category.toLowerCase() === "laptop"
-          )
-        );
+        setLaptops(items.filter((item) => categoryMatches(item?.category, "laptop")));
 
-        setWearables(
-          data.filter(
-            (item) => item.category.toLowerCase() === "wearables"
-          )
-        );
+        setWearables(items.filter((item) => categoryMatches(item?.category, "wearables")));
 
-        setAccessories(
-          data.filter(
-            (item) => item.category.toLowerCase() === "accessories"
-          )
-        );
+        setAccessories(items.filter((item) => categoryMatches(item?.category, "accessories")));
       } catch (err) {
-        console.log(err);
+        console.error("Home fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -60,38 +50,42 @@ const Home = () => {
     fetchProduct();
   }, []);
 
-  const CategorySection = ({ title, items }) => (
-    <>
-      <div className="flex justify-center my-12">
-        <h2 className="text-4xl font-bold text-gray-800">
-          {title.split(" ")[0]}{" "}
-          <span className="text-green-500">
-            {title.split(" ").slice(1).join(" ")}
-          </span>
-        </h2>
-      </div>
+  const CategorySection = ({ title, items = [] }) => {
+    if (!items || items.length === 0) return null;
+    return (
+      <>
+        <div className="flex justify-center my-12 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">
+            {title.split(" ")[0]}{" "}
+            <span className="text-green-500">
+              {title.split(" ").slice(1).join(" ")}
+            </span>
+          </h2>
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {items.slice(0, 4).map((product) => (
-          <ProductCard
-            key={product._id}
-            product={product}
-          />
-        ))}
-      </div>
-    </>
-  );
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {items.slice(0, 4).map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+            />
+          ))}
+        </div>
+      </>
+    );
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
+      <div className="min-h-screen flex justify-center items-center bg-white">
         <span className="loading loading-spinner loading-lg text-success"></span>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-5">
+    <div className="w-full bg-white overflow-x-hidden">
+      <div className="container mx-auto px-5">
 
       {/* Hero Section */}
 
@@ -157,7 +151,7 @@ const Home = () => {
 
       {/* Features */}
 
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-6 my-20">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 my-20">
 
         <div className="bg-white rounded-2xl shadow-md p-6 text-center hover:-translate-y-2 duration-300">
           <FaShippingFast className="text-5xl text-green-500 mx-auto" />
@@ -187,20 +181,26 @@ const Home = () => {
 
       {/* Featured Products */}
 
-      <div className="flex justify-center my-12">
-        <h2 className="text-4xl font-bold text-gray-800">
+      <div className="flex justify-center my-12 text-center">
+        <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">
           Featured <span className="text-green-500">Products</span>
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <ProductCard
-            key={product._id}
-            product={product}
-          />
-        ))}
-      </div>
+      {products.length === 0 ? (
+        <div className="text-center py-8 text-gray-400">
+          <p>No featured products available at this time.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Categories */}
 
@@ -224,6 +224,7 @@ const Home = () => {
         items={accessories}
       />
 
+      </div>
     </div>
   );
 };

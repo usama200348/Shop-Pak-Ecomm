@@ -2,30 +2,26 @@ const Order = require('../model/Order');
 const sendEmail = require('../utils/sendEmail');
 
 // Creating New Order
-const createOrder = async(req,res)=>{
-    try{
-    const {items,totalAmount,address,paymentId}=req.body;
-   if(!items || !totalAmount || !address){
-    res.status(400).json({message:"Incomplete Order Data Entered"});
-   }else{
-    const order = new Order({
-        user:req.user._id,
-        items,
-        totalAmount,
-        address,
-        paymentId
-    })
-    console.log(order);
-    await order.save();
-    // const message = `Dear${req.user.name},\n\n Thank You For Placing Order From Shop Pak Ecom Mern Your Your OrderId:${order.id}\n Total Amount : ${totalAmount}\n Payment Confrimation Id:${paymentId} Shipping Address Is ${address}  `
-    // await sendEmail(req.user.email,"Order Created " , message);
-    res.status(201).json({message:"Order Have Be Added Successfully"});
-}}catch(error){
-    console.error(error)
-    res.status(500).json({message:"Error While Creating Order "},error.message);
-    console.log("Internal Server Error While Creating New Order",error.message);
-    
-}};
+const createOrder = async (req, res) => {
+    try {
+        const { items, totalAmount, address, paymentId } = req.body;
+        if (!items || !totalAmount || !address) {
+            return res.status(400).json({ message: "Incomplete Order Data Entered" });
+        }
+        const order = new Order({
+            user: req.user._id,
+            items,
+            totalAmount,
+            address,
+            paymentId
+        });
+        await order.save();
+        return res.status(201).json({ message: "Order Placed Successfully", order });
+    } catch (error) {
+        console.error("Internal Server Error While Creating New Order:", error.message);
+        return res.status(500).json({ message: "Error While Creating Order: " + error.message });
+    }
+};
 
 
 // Getting My Orders
@@ -74,7 +70,7 @@ const UpdateOrderStatus = async(req,res)=>{
         }
     }catch(error){
         res.status(500).json({message:"Internal Server Error While Updating Order"});
-        console.log("Getting Server Error While Updating Order",order.message);        
+        console.log("Getting Server Error While Updating Order: ", error.message);        
     }
 }
 

@@ -1,66 +1,86 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import ProductCard from "../componetns/ProductCard";
 import { FaSearch, FaFilter } from "react-icons/fa";
+import { API_URL } from "../config/api";
+import { CATEGORY_OPTIONS, categoryMatches, getCategoryOption } from "../config/categories";
 
 const Products = () => {
+  const [searchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("");
 
+  const urlCategory = searchParams.get("category");
+
+  useEffect(() => {
+    if (urlCategory) {
+      setCategory(getCategoryOption(urlCategory)?.slug || urlCategory);
+    }
+  }, [urlCategory]);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
-        const data = await res.json();
+        const params = new URLSearchParams();
+        if (urlCategory) params.set("category", urlCategory);
 
-        setProducts(data);
-      } catch (error) {
-        console.log(error.message);
+        const res = await fetch(`${API_URL}/api/products${params.toString() ? `?${params}` : ""}`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch products: ${res.statusText}`);
+        }
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Products fetch error:", err.message);
+        setError(err.message);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [urlCategory]);
 
   const categories = [
-    "All",
-    ...new Set(products.map((item) => item.category)),
+    { label: "All", value: "All" },
+    ...CATEGORY_OPTIONS.map((item) => ({ label: item.name, value: item.slug })),
   ];
 
   const filteredProducts = useMemo(() => {
-    let items = [...products];
+    let items = Array.isArray(products) ? [...products] : [];
 
-    if (category !== "All") {
-      items = items.filter((item) => item.category === category);
+    if (category !== "All" && !urlCategory) {
+      items = items.filter((item) => categoryMatches(item?.category, category));
     }
 
     if (search) {
       items = items.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+        item?.name?.toLowerCase().includes(search.toLowerCase())
       );
     }
 
     if (sort === "low") {
-      items.sort((a, b) => a.price - b.price);
+      items.sort((a, b) => (a.price || 0) - (b.price || 0));
     }
 
     if (sort === "high") {
-      items.sort((a, b) => b.price - a.price);
+      items.sort((a, b) => (b.price || 0) - (a.price || 0));
     }
 
     if (sort === "newest") {
-      items.reverse();
+      items.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     }
 
     return items;
-  }, [products, search, category, sort]);
+  }, [products, search, category, sort, urlCategory]);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen overflow-x-hidden">
 
       {/* HERO */}
 
@@ -82,7 +102,7 @@ const Products = () => {
 
         {/* FILTER BAR */}
 
-        <div className="bg-white rounded-2xl shadow-md p-5 mb-10">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-5 mb-10">
 
           <div className="grid lg:grid-cols-4 gap-5">
 
@@ -111,10 +131,10 @@ const Products = () => {
             >
               {categories.map((cat) => (
                 <option
-                  key={cat}
-                  value={cat}
+                  key={cat.value}
+                  value={cat.value}
                 >
-                  {cat}
+                  {cat.label}
                 </option>
               ))}
             </select>
@@ -142,7 +162,7 @@ const Products = () => {
 
         {/* Product Count */}
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-8">
 
           <h2 className="text-3xl font-bold">
             Products
@@ -160,6 +180,18 @@ const Products = () => {
           <div className="flex justify-center py-24">
 
             <span className="loading loading-spinner loading-lg text-green-500"></span>
+
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+
+            <h2 className="text-3xl font-bold text-red-500">
+              Failed to Load Products
+            </h2>
+
+            <p className="text-gray-500 mt-3">
+              {error}
+            </p>
 
           </div>
         ) : filteredProducts.length === 0 ? (

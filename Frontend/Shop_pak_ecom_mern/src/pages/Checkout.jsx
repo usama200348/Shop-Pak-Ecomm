@@ -1,11 +1,12 @@
 import React, { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {FaUser,FaPhone,FaMapMarkerAlt,FaEnvelope,FaMoneyBillWave,FaCreditCard,FaCheckCircle,} from "react-icons/fa";
+import { FaUser, FaPhone, FaMapMarkerAlt, FaEnvelope, FaMoneyBillWave, FaCreditCard, FaCheckCircle } from "react-icons/fa";
 import EasyPaisa from "../assets/easypaisa.png";
 import JazzCash from "../assets/jazzcash.webp";
 import { motion } from "framer-motion";
 import { clearCart } from "../redux/cartSlice";
+import { API_URL } from "../config/api";
 
 const Checkout = () => {
   const cartItems = useSelector((state) => state.cart.cartItem || []);
@@ -29,7 +30,7 @@ const Checkout = () => {
   };
 
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.qty,
+    (sum, item) => sum + (item.price || 0) * (item.qty || 1),
     0
   );
 
@@ -43,12 +44,17 @@ const Checkout = () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
+      if (!userInfo || !userInfo.token) {
+        alert("Please log in to place an order.");
+        navigate("/login");
+        return;
+      }
+
       const body = {
         items: cartItems.map((item) => ({
           productId: item.productId,
           qty: item.qty,
           price: item.price,
-
         })),
 
         totalAmount: total,
@@ -63,18 +69,14 @@ const Checkout = () => {
           country: "Pakistan",
         },
 
-paymentId:
-payment==="cod"
-? "COD"
-: "PAY"+Date.now()
+        paymentId: payment === "cod" ? "COD" : "PAY" + Date.now(),
+      };
 
-};
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/order`, {
+      const res = await fetch(`${API_URL}/api/order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${userInfo?.token}`,
+          Authorization: `Bearer ${userInfo.token}`,
         },
         body: JSON.stringify(body),
       });
@@ -84,11 +86,11 @@ payment==="cod"
       if (res.ok) {
         modalRef.current.showModal();
       } else {
-        alert(data.message || "Something went wrong");
+        alert(data.message || "Something went wrong placing the order.");
       }
     } catch (err) {
-      console.error(err);
-      alert("Order Failed");
+      console.error("Order error:", err);
+      alert("Order Failed. Please try again.");
     }
   };
 
@@ -121,7 +123,7 @@ payment==="cod"
         </div>
       </dialog>
 
-      <div className="bg-gray-100 min-h-screen py-10">
+      <div className="bg-gray-100 min-h-screen py-10 overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-5">
           <h1 className="text-4xl font-bold mb-10">Checkout</h1>
 
@@ -132,7 +134,7 @@ payment==="cod"
               <motion.div
                 initial={{ opacity: 0, x: -80 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="lg:col-span-2 bg-white rounded-3xl shadow-xl p-8"
+                className="lg:col-span-2 bg-white rounded-lg shadow-xl p-5 sm:p-8"
               >
                 <h2 className="text-2xl font-bold mb-8">Shipping Details</h2>
 
@@ -220,7 +222,7 @@ payment==="cod"
 
                 <div className="grid md:grid-cols-2 gap-5">
                   <label
-                    className={`border rounded-2xl p-5 cursor-pointer transition ${
+                    className={`border rounded-lg p-5 cursor-pointer transition ${
                       payment === "cod" ? "border-green-500 bg-green-50" : ""
                     }`}
                   >
@@ -235,7 +237,7 @@ payment==="cod"
                   </label>
 
                   <label
-                    className={`border rounded-2xl p-5 cursor-pointer transition ${
+                    className={`border rounded-lg p-5 cursor-pointer transition ${
                       payment === "card" ? "border-green-500 bg-green-50" : ""
                     }`}
                   >
@@ -250,7 +252,7 @@ payment==="cod"
                   </label>
 
                   <label
-                    className={`border rounded-2xl p-5 cursor-pointer ${
+                    className={`border rounded-lg p-5 cursor-pointer ${
                       payment === "jazzcash"
                         ? "border-green-500 bg-green-50"
                         : ""
@@ -267,7 +269,7 @@ payment==="cod"
                   </label>
 
                   <label
-                    className={`border rounded-2xl p-5 cursor-pointer ${
+                    className={`border rounded-lg p-5 cursor-pointer ${
                       payment === "easypaisa"
                         ? "border-green-500 bg-green-50"
                         : ""
@@ -293,7 +295,7 @@ payment==="cod"
               <motion.div
                 initial={{ opacity: 0, x: 80 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-white rounded-3xl shadow-xl p-8 h-fit sticky top-28"
+                className="bg-white rounded-lg shadow-xl p-5 sm:p-8 h-fit lg:sticky lg:top-28"
               >
                 <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
 
@@ -301,7 +303,7 @@ payment==="cod"
                   {cartItems.map((item) => (
                     <div
                       key={item.productId}
-                      className="flex justify-between"
+                      className="flex justify-between gap-4"
                     >
                       <span>
                         {item.name} × {item.qty}

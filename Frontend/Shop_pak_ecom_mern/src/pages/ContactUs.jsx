@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 
 const ContactUs = () => {
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen overflow-x-hidden">
 
       {/* Hero */}
       <section className="relative bg-gradient-to-r from-green-600 via-green-500 to-emerald-600 text-white overflow-hidden">
@@ -22,7 +22,7 @@ const ContactUs = () => {
             initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: .8 }}
-            className="text-5xl md:text-6xl font-extrabold"
+            className="text-4xl md:text-6xl font-extrabold"
           >
             Contact <span className="text-yellow-300">ShopPak</span>
           </motion.h1>
@@ -49,7 +49,7 @@ const ContactUs = () => {
 
           <motion.div
             whileHover={{ y: -8 }}
-            className="bg-white rounded-3xl shadow-xl p-8 text-center"
+            className="bg-white rounded-lg shadow-xl p-8 text-center"
           >
             <FaPhoneAlt className="text-5xl text-green-500 mx-auto mb-5" />
 
@@ -69,7 +69,7 @@ const ContactUs = () => {
 
           <motion.div
             whileHover={{ y: -8 }}
-            className="bg-white rounded-3xl shadow-xl p-8 text-center"
+            className="bg-white rounded-lg shadow-xl p-8 text-center"
           >
             <FaEnvelope className="text-5xl text-blue-500 mx-auto mb-5" />
 
@@ -89,7 +89,7 @@ const ContactUs = () => {
 
           <motion.div
             whileHover={{ y: -8 }}
-            className="bg-white rounded-3xl shadow-xl p-8 text-center"
+            className="bg-white rounded-lg shadow-xl p-8 text-center"
           >
             <FaMapMarkerAlt className="text-5xl text-red-500 mx-auto mb-5" />
 
@@ -109,7 +109,7 @@ const ContactUs = () => {
 
           <motion.div
             whileHover={{ y: -8 }}
-            className="bg-white rounded-3xl shadow-xl p-8 text-center"
+            className="bg-white rounded-lg shadow-xl p-8 text-center"
           >
             <FaClock className="text-5xl text-orange-500 mx-auto mb-5" />
 
@@ -143,7 +143,7 @@ const ContactUs = () => {
       whileInView={{ opacity: 1, x: 0 }}
       transition={{ duration: .7 }}
       viewport={{ once: true }}
-      className="bg-white rounded-3xl shadow-xl p-8"
+      className="bg-white rounded-lg shadow-xl p-5 sm:p-8"
     >
 
       <h2 className="text-4xl font-bold mb-3">
@@ -205,7 +205,7 @@ const ContactUs = () => {
       className="space-y-6"
     >
 
-      <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-3xl text-white p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg text-white p-5 sm:p-8 shadow-xl">
 
         <h2 className="text-3xl font-bold mb-5">
           Why Shop With Us?
@@ -237,7 +237,7 @@ const ContactUs = () => {
 
       </div>
 
-      <div className="bg-white rounded-3xl shadow-xl p-8">
+      <div className="bg-white rounded-lg shadow-xl p-5 sm:p-8">
 
         <h2 className="text-2xl font-bold mb-5">
 
