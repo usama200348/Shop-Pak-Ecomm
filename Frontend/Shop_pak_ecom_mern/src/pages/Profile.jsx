@@ -127,14 +127,14 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-100 via-white to-green-50 py-12 px-5">
+    <div className="min-h-screen bg-linear-to-br from-green-100 via-white to-green-50 py-12 px-5">
       <div className="max-w-5xl mx-auto">
 
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
 
           {/* Header */}
 
-          <div className="bg-gradient-to-r from-green-500 to-green-700 h-48 relative">
+          <div className="bg-linear-to-r from-green-500 to-green-700 h-48 relative">
 
             <div className="absolute left-1/2 -bottom-16 -translate-x-1/2">
 
@@ -226,9 +226,7 @@ const Profile = () => {
                 </label>
 
                 <div className="relative mt-2">
-
                   <FaEnvelope className="absolute left-4 top-4 text-gray-400" />
-
                   <input
                     className="input input-bordered w-full pl-11"
                     name="email"

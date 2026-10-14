@@ -162,7 +162,7 @@ const Orders = () => {
 
         <div className="overflow-x-auto">
 
-          <table className="table min-w-[900px]">
+          <table className="table min-w-225">
 
             <thead className="bg-green-600 text-white">
 
